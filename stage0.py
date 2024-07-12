@@ -42,6 +42,11 @@ class LicensePlateDetector:
             return None
         return cap
     
+    def preprocess_image(self, image):
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Noise reduction
+        _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)  # Inverse binary threshold
+        return thresh
 
 
     def detect_and_extract(self, bucket_name, key):
@@ -92,7 +97,7 @@ class LicensePlateDetector:
 
                         # Crop the detected vehicle
                         vehicle = frame[y1:y2, x1:x2]
-                        vehicle_gray = cv2.cvtColor(vehicle, cv2.COLOR_BGR2GRAY)
+                        vehicle_gray = self.preprocess_image(vehicle)
 
                         cv2.imwrite(f"dbg/debug_vehicle_{i}.png", vehicle_gray)
 
