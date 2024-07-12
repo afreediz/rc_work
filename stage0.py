@@ -36,12 +36,37 @@ class LicensePlateDetector:
             return None
         return cap
     
+    def resize_image(self, image, scale=2):
+        width = int(image.shape[1] * scale)
+        height = int(image.shape[0] * scale)
+        return cv2.resize(image, (width, height), interpolation=cv2.INTER_LINEAR)
 
+    def denoise_image(self, image):
+        return cv2.fastNlMeansDenoising(image, None, 30, 7, 21)
+
+    def adaptive_threshold(self, image):
+        return cv2.adaptiveThreshold(image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                                    cv2.THRESH_BINARY, 11, 2)
+
+    def enhance_edges(self, image):
+        kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        return cv2.filter2D(image, -1, kernel)
+
+    def sharpen_image(self, image):
+        kernel = np.array([[0, -1, 0], [-1, 5, -1], [0, -1, 0]])
+        return cv2.filter2D(image, -1, kernel)
     def preprocess_image(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Noise reduction
+        # return thresh
+        gray = self.resize_image(gray, scale=2)
+        gray = self.denoise_image(gray)
+        # gray = self.adaptive_threshold(gray)
         _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)  # Inverse binary threshold
-        return thresh
+        gray = self.enhance_edges(thresh)
+        gray = self.sharpen_image(gray)
+
+        return gray
 
     def rotate_frame(self, frame):
         # Rotate the frame 90 degrees clockwise
