@@ -48,6 +48,10 @@ class LicensePlateDetector:
         _, thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)  # Inverse binary threshold
         return thresh
 
+    def rotate_frame(self, frame):
+        # Rotate the frame 90 degrees clockwise
+        rotated_frame = cv2.rotate(frame, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        return rotated_frame
 
     def detect_and_extract(self, bucket_name, key):
 
@@ -57,7 +61,7 @@ class LicensePlateDetector:
         # filename = os.path.basename(key)
         # self.s3.download_file(bucket_name, key, "eg.mp4")
         # print(filename)
-        # cap = cv2.VideoCapture("bla.mp4")
+        # cap = cv2.VideoCapture("bli.mp4")
 
         cap = self.stream_video_from_s3(bucket_name, key)
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -72,6 +76,7 @@ class LicensePlateDetector:
             if not ret:
                 break
 
+            frame = self.rotate_frame(frame)
             # if frame is None:
             #     print("Error: Unable to load image from:", image_path)
             #     return
@@ -126,4 +131,4 @@ class LicensePlateDetector:
 # Example usage
 detector = LicensePlateDetector('best.pickle')
 detector.init_s3(os.getenv("AWS_ACCESS_KEY_ID"), os.getenv("AWS_SECRET_ACCESS_KEY"))
-detector.detect_and_extract("rc-bucket-1", "videos/REC1376631196423397025.mp4")
+detector.detect_and_extract("rc-bucket-1", "videos/REC1730047643518045176.mp4")
