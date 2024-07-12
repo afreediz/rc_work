@@ -48,9 +48,18 @@ class LicensePlateDetector:
 
         if not self.s3:
             print("Please initalize the s3 bucket.")
+            
+        # filename = os.path.basename(key)
+        # self.s3.download_file(bucket_name, key, "eg.mp4")
+        # print(filename)
+        # cap = cv2.VideoCapture("bla.mp4")
 
         cap = self.stream_video_from_s3(bucket_name, key)
-        cap = cv2.VideoCapture('car_vid.mp4')
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        print(f"FPS: {fps}, Frame Count: {frame_count}, Width: {width}, Height: {height}")
 
         # while the video is opened
         while cap.isOpened():
@@ -85,6 +94,8 @@ class LicensePlateDetector:
                         vehicle = frame[y1:y2, x1:x2]
                         vehicle_gray = cv2.cvtColor(vehicle, cv2.COLOR_BGR2GRAY)
 
+                        cv2.imwrite(f"dbg/debug_vehicle_{i}.png", vehicle_gray)
+
                         # Use pytesseract to extract the text (license plate)
                         text = pytesseract.image_to_string(vehicle_gray, config='-c tessedit_char_whitelist=0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ --psm 11')
 
@@ -110,4 +121,4 @@ class LicensePlateDetector:
 # Example usage
 detector = LicensePlateDetector('best.pickle')
 detector.init_s3(os.getenv("AWS_ACCESS_KEY_ID"), os.getenv("AWS_SECRET_ACCESS_KEY"))
-detector.detect_and_extract("rc-bucket-1", "videos/REC5555158701322445799.mp4")
+detector.detect_and_extract("rc-bucket-1", "videos/REC1376631196423397025.mp4")
