@@ -22,12 +22,6 @@ class LicensePlateDetector:
         self.userid = 100
         self.db = datamodel.VehicleDatabase("vehicles.db")
         
-    def preprocess_image(self, image):
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-        kernel = np.ones((3,3),np.uint8)
-        opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=2)
-        return opening
     
     def init_s3(self, access_key, secret_key):
         self.s3 = boto3.client('s3',
@@ -42,6 +36,7 @@ class LicensePlateDetector:
             return None
         return cap
     
+
     def preprocess_image(self, image):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         gray = cv2.bilateralFilter(gray, 11, 17, 17)  # Noise reduction
@@ -131,4 +126,4 @@ class LicensePlateDetector:
 # Example usage
 detector = LicensePlateDetector('best.pickle')
 detector.init_s3(os.getenv("AWS_ACCESS_KEY_ID"), os.getenv("AWS_SECRET_ACCESS_KEY"))
-detector.detect_and_extract("rc-bucket-1", "videos/REC1730047643518045176.mp4")
+detector.detect_and_extract("rc-bucket-1", "videos/REC1962082625132986264.mp4")
